@@ -3,6 +3,7 @@ using Masrwof.Interfaces;
 using Masrwof.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Radzen;
 
 namespace Masrwof
 {
@@ -18,6 +19,8 @@ namespace Masrwof
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
+            builder.Services.AddRadzenComponents();
+           
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
@@ -31,6 +34,7 @@ namespace Masrwof
                 options.UseSqlite($"Data Source={dbPath}"),
                 ServiceLifetime.Scoped);
 
+            
             builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
             var app = builder.Build();

@@ -1,20 +1,22 @@
 ﻿@page "/expensesList"
+@page "/"
+
 
 @inject IExpenseService ExpenseService
 @inject NavigationManager Navigation
 
 <div class="container mt-4" dir="rtl" style="text-align: right;">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary fw-bold"> سجل المصروفات</h2>
+        <h2 class="text-primary fw-bold"><RadzenIcon Icon="receipt_long" class="me-2" /> سجل المصروفات</h2>
      
         <button class="btn btn-success px-4 fw-bold" @onclick='() => Navigation.NavigateTo("/expense/add")'> 
-             إضافة مصروف
+             <RadzenIcon Icon="add_circle" class="me-1" /> إضافة مصروف
         </button>
     </div>
 
     <div class="card bg-light border-0 shadow-sm mb-4">
         <div class="card-body text-center">
-            <span class="text-muted d-block mb-1">إجمالي المصروفات</span>
+            <span class="text-muted d-block mb-1"><RadzenIcon Icon="payments" class="me-1" /> إجمالي المصروفات</span>
             <h3 class="text-danger fw-bold mb-0">@ExpenseService.GetTotalExpenses().ToString("C2", CultureInfo.GetCultureInfo("ar-LY"))</h3>
         </div>
     </div>
@@ -24,14 +26,14 @@
             @if (expenses == null || !expenses.Any())
             {
                 <div class="text-center my-5 py-4">
-                    <p class="text-muted fs-5 mb-0">لا توجد مصروفات مسجلة حالياً.</p>
+                    <p class="text-muted fs-5 mb-0"><RadzenIcon Icon="receipt" class="me-1" /> لا توجد مصروفات مسجلة حالياً.</p>
                 </div>
             }
             else
             {
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 text-center">
-                        <thead class="table-dark">
+                        <thead class="table-info">
                             <tr>
                                 <th>التاريخ</th>
                                 <th>العنوان</th>
@@ -51,11 +53,17 @@
                                     <td>
                                         <div class="btn-group" role="group">
                                       
-                                            <button class="btn btn-sm btn-outline-secondary" @onclick='() => Navigation.NavigateTo($"/expense/view/{item.Id}")'> عرض</button>
+                                             <button class="btn btn-sm btn-outline-secondary" title="عرض" @onclick='() => Navigation.NavigateTo($"/expense/view/{item.Id}")'>
+                                                 <RadzenIcon Icon="visibility" /> عرض
+                                             </button>
                                            
-                                            <button class="btn btn-sm btn-outline-primary" @onclick='() => Navigation.NavigateTo($"/expense/edit/{item.Id}")'> تعديل</button>
+                                             <button class="btn btn-sm btn-outline-primary" title="تعديل" @onclick='() => Navigation.NavigateTo($"/expense/edit/{item.Id}")'>
+                                                 <RadzenIcon Icon="edit" /> تعديل
+                                             </button>
                                            
-                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteExpense(item.Id)"> حذف</button>
+                                             <button class="btn btn-sm btn-outline-danger" title="حذف" @onclick="() => DeleteExpense(item.Id)">
+                                                 <RadzenIcon Icon="delete" /> حذف
+                                             </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -68,8 +76,30 @@
     </div>
 </div>
 
+@if (expenseToDelete.HasValue)
+{
+    <div class="modal d-block" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,.5);">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" dir="rtl">
+                <div class="modal-header">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close" aria-label="إغلاق" @onclick="CancelDelete"></button>
+                </div>
+                <div class="modal-body text-end">
+                    هل أنت متأكد من حذف هذا المصروف؟
+                </div>
+                <div class="modal-footer justify-content-start">
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">حذف</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelDelete">تراجع</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
-    private List<Expense> expenses;
+    private List<Expense> expenses = new List<Expense>();
+    private Guid? expenseToDelete;
 
     protected override void OnInitialized()
     {
@@ -78,7 +108,23 @@
 
     private void DeleteExpense(Guid id)
     {
-        ExpenseService.DeleteExpense(id);
+        expenseToDelete = id;
+    }
+
+    private void ConfirmDelete()
+    {
+        if (!expenseToDelete.HasValue)
+        {
+            return;
+        }
+
+        ExpenseService.DeleteExpense(expenseToDelete.Value);
         expenses = ExpenseService.GetAllExpenses();
+        expenseToDelete = null;
+    }
+
+    private void CancelDelete()
+    {
+        expenseToDelete = null;
     }
 }
